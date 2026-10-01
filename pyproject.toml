@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "esys-agent-cli"
+version = "0.1.0"
+description = "JSON command-line automation for external E-Sys installations and datasets"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE", "THIRD_PARTY.md"]
+authors = [{name = "Solarthis"}]
+dependencies = []
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Environment :: Console",
+]
+
+[project.scripts]
+esys = "esys_cli.cli:main"
+
+[project.urls]
+Repository = "https://github.com/Solarthis/esys-cli"
+Issues = "https://github.com/Solarthis/esys-cli/issues"
+
+[tool.setuptools]
+packages = ["esys_cli"]
+include-package-data = false
