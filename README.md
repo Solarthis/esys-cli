@@ -1,12 +1,29 @@
 # E-Sys CLI
 
-A JSON command-line interface for agents and scripts using an existing E-Sys installation. Includes offline XML inspection, local dataset manifests, verified identity reads, captures and experimental TAL planning/execution.
+A JSON command-line interface for independent ENET/DoIP diagnostics and optional E-Sys automation. Read and clear UDS fault memory, verify VIN, and read ECU data without E-Sys or BMW datasets. The separate native backend handles existing E-Sys captures and experimental TAL workflows.
 
-**Alpha software. Vehicle programming has not been validated on a live vehicle with this CLI.** Offline tests and a native E-Sys version probe do not establish that flashing, coding or calibration will work. Fault-memory reading and clearing are **not implemented**. Native commands still require separately installed E-Sys and compatible datasets.
+**Alpha software.** Independent diagnostics are tested against literal protocol vectors and a TCP ECU simulator; live vehicle acceptance is pending. Native programming has not been validated on a live vehicle with this CLI. Simulator tests and native version probes do not establish that flashing, coding or calibration will work. See [diagnostics](docs/diagnostics.md) for exact scope and operating instructions.
+
+| Task | E-Sys required? | BMW datasets required? |
+| --- | --- | --- |
+| `diag vin`, `diag read-did`, `diag faults` | No | No |
+| `diag clear-plan`, `diag clear` | No | No |
+| `diag demo` (simulator only) | No | No |
+| XML inspection, dataset inventory/verification | No | Your own files only |
+| Native capture, TAL calculation/programming | Yes | Yes |
+
+Try the complete independent workflow without a car:
+
+```powershell
+esys diag demo --transport hsfz
+esys diag demo --transport doip
+```
+
+Both demos bind only to loopback, generate synthetic faults, clear them once, and verify the read-back. Their JSON explicitly says `simulation: true`.
 
 ## Install
 
-Python 3.11 or newer. Offline commands work on Windows and Linux. Native E-Sys workflows require Windows.
+Python 3.11 or newer. Independent diagnostics and offline commands work on Windows and Linux. Native E-Sys workflows require Windows.
 
 ```powershell
 python -m pip install "git+https://github.com/Solarthis/esys-cli.git"
@@ -26,7 +43,7 @@ The source checkout also provides `./esys.ps1`; set `ESYS_CLI_PYTHON` if Python 
 
 ## External datasets
 
-The public repository contains code and synthetic tests under MIT. Supply your own legitimately obtained E-Sys installation and PSdZData. No proprietary datasets are distributed or converted into MIT data. See [THIRD_PARTY.md](THIRD_PARTY.md).
+The public repository contains original code and synthetic tests under MIT. Independent `diag` commands do not open E-Sys or PSdZData. For native workflows, supply your own legitimately obtained E-Sys installation and PSdZData. No proprietary datasets are distributed or converted into MIT data. Refactoring access to third-party data does not change its licensing. See [THIRD_PARTY.md](THIRD_PARTY.md).
 
 Keep datasets outside your checkout. `--data-root` identifies the **parent** of `psdzdata`:
 
@@ -118,9 +135,10 @@ Do not treat a successful plan as authorization to flash. Review the TAL and nat
 
 ```powershell
 python -m unittest discover -s tests -v
+python tools/check_release.py
 python -m pip wheel --no-deps --wheel-dir dist .
 ```
 
-Tests use synthetic data and fake vehicle responses. CI runs on Windows/Linux with Python 3.11 and 3.13; it does not connect to vehicles. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
+Tests use synthetic data, real loopback TCP protocol exchanges and fake native responses. CI runs on Windows/Linux with Python 3.11 and 3.13; it does not connect to vehicles. Release checks reject unexpected tracked assets, common credential patterns and non-synthetic VIN patterns. They are heuristic checks, not legal clearance or a complete secret scanner. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
 Licensed under [MIT](LICENSE). External vendor software/data retain their own terms.

@@ -21,6 +21,8 @@ def parser():
     p.add_argument('--jobs-root', default=os.environ.get('ESYS_JOBS_ROOT', str(state_root() / 'jobs')))
     p.add_argument('--timeout', type=float, default=120)
     commands = p.add_subparsers(dest='command', required=True)
+    from .diagnostic_cli import add_parser
+    add_parser(commands)
     doctor = commands.add_parser('doctor', help='Inspect installation; optional metadata probe')
     doctor.add_argument('--native', action='store_true')
     commands.add_parser('capabilities')
@@ -64,6 +66,9 @@ def parser():
 
 
 def dispatch(args):
+    if args.command == 'diag':
+        from .diagnostic_cli import dispatch as diagnostic_dispatch
+        return diagnostic_dispatch(args)
     if args.command == 'dataset':
         from .datasets import Dataset
         dataset = Dataset(args.data_root)
@@ -107,14 +112,17 @@ def dispatch(args):
             runner.update(job, state='verified')
         return result
     if args.command == 'capabilities':
-        return {'cli_commands': ['doctor', 'capabilities', 'projects', 'dataset', 'profile', 'inspect', 'job', 'read', 'capture', 'calculate-tal', 'plan', 'execute'],
+        return {'cli_commands': ['doctor', 'capabilities', 'diag', 'projects', 'dataset', 'profile', 'inspect', 'job', 'read', 'capture', 'calculate-tal', 'plan', 'execute'],
                 'dataset_provider': 'external-filesystem',
                 'programming': {'maturity': 'experimental', 'live_vehicle_validated': False},
                 'native_backend': 'com.bmw.esys.domain.batch.EsysBatch',
                 'read_kinds': ['fa', 'svt', 'ncd', 'vcm-master', 'vcm-backup', 'vin', 'software-version'],
                 'supported_tal_operations': ['blFlash', 'swDeploy', 'cdDeploy'],
                 'native_only_not_exposed': ['VCM writes', 'PDX import/update', 'certificates', 'ECU mode switching', 'secure tokens', 'backend authentication'],
-                'fault_memory': {'supported': False, 'reason': 'No fault-memory command in inspected E-Sys batch usage; use a separate UDS backend'}}
+                'fault_memory': {'supported': True, 'backend': 'independent-uds', 'transports': ['hsfz', 'doip'],
+                                 'requires_esys': False, 'requires_datasets': False, 'live_vehicle_validated': False,
+                                 'services': ['read_vin', 'read_did', 'read_faults', 'plan_clear', 'clear_faults'],
+                                 'clear_requires': ['fresh_plan', 'exact_hash', 'stationary_attestation']}}
     if args.command == 'plan':
         result = create_plan(args.profile, args.fa, args.svt_ist, args.svt_soll, args.tal, args.allow_ecu, args.data_root)
         write_new_json(args.output, result)
