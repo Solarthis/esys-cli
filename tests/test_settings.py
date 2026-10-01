@@ -23,8 +23,8 @@ class SettingsTests(unittest.TestCase):
             env = {key: value for key, value in os.environ.items() if key != 'ESYS_JOBS_ROOT'}
             with patch.dict(os.environ, env, clear=True):
                 jobs = Path(parser().parse_args(['capabilities']).jobs_root)
-                self.assertTrue(jobs.is_relative_to(Path(directory)))
+                self.assertTrue(jobs.is_relative_to(Path(directory).resolve()))
                 a = NativeRunner(Path(directory) / 'install-a', directory, jobs)
                 b = NativeRunner(Path(directory) / 'install-b', directory, Path(directory) / 'other-jobs')
                 self.assertEqual(a.lock_root, b.lock_root)
-                self.assertTrue(a.lock_root.is_relative_to(Path(directory)))
+                self.assertTrue(a.lock_root.is_relative_to(Path(directory).resolve()))

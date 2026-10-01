@@ -9,7 +9,7 @@ class NativeTests(unittest.TestCase):
         NativeRunner, _ = self.contracts()
         from esys_cli.core import CliError
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
+            root = Path(directory).resolve()
             (root/'jre/bin').mkdir(parents=True)
             (root/'jre/bin/java.exe').touch()
             batch = root/'E-Sys.bat'
